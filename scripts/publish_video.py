@@ -7,10 +7,10 @@ import rospy, rospkg
 import sys, os
 import cv2
 import glob
+import numpy as np
 from std_msgs.msg import String
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, CameraInfo
 from cv_bridge import CvBridge, CvBridgeError
-import time
 
 class image_publisher:
 	def __init__(self):
@@ -24,6 +24,7 @@ class image_publisher:
 		self.bridge = CvBridge()
 		self.image_pub = rospy.Publisher('image_color_rect', Image)
 		self.depth_pub = rospy.Publisher('image_depth_rect', Image )
+		self.cameraInfo_pub = rospy.Publisher('camera_info', CameraInfo)
 
 		self.rgb_frames = []
 		self.depth_frames = []
@@ -35,7 +36,17 @@ class image_publisher:
 		for frame in sorted(glob.glob(self.input_depth_dir+'*.png')):
 			cv_image = cv2.imread(frame)
 			self.depth_frames.append(cv_image)
-	
+
+		self.cam_info_msg = CameraInfo()
+		self.cam_info_msg.width = 1920
+		self.cam_info_msg.height = 1080				
+		fx = 365.481
+		fy = 365.481
+		cx = 257.346
+		cy = 210.347
+		self.cam_info_msg.K = np.array([fx, 0, cx,
+										0, fy, cy,
+										0, 0, 1])	
 		
 
 	def run(self):
@@ -52,6 +63,7 @@ class image_publisher:
 				ros_msg_depth = self.bridge.cv2_to_imgmsg(frame_depth, 'bgr8')
 				self.image_pub.publish(ros_msg_rgb)
 				self.depth_pub.publish(ros_msg_depth)
+				self.cameraInfo_pub.publish(self.cam_info_msg)
 
 				rate.sleep()
 			else:
