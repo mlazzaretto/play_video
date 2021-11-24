@@ -24,12 +24,14 @@ class image_publisher:
 
 	def run(self):
 
-		rate = rospy.Rate(1)
+		rate = rospy.Rate(10)
 		
 		for frame in sorted(glob.glob(self.input_dir+'*.png')):
 
 			if not rospy.is_shutdown():
 				cv_image = cv2.imread(frame)
+				#cv2.imshow('img_win', cv_image)
+				#cv2.waitKey(25)
 
 				if cv_image is not None:
 					ros_msg = self.bridge.cv2_to_imgmsg(cv_image, 'bgr8')
