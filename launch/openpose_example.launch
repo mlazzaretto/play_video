@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="node_name"                       default="node_01" />
+
+  <!--****************************************************-->
+  <!-- Margherita publisher from files                    -->
+  <!--****************************************************-->
+  <node pkg="play_video" type="publish_video.py" name="fake_camera_publisher">
+    <remap from="image_color_rect" to="/k2b/$(arg node_name)/qhd/image_color_rect" />
+    <remap from="image_depth_rect" to="/k2b/$(arg node_name)/qhd/image_depth_rect" />
+  </node>
+
+  <!--**********************************************************-->
+  <!-- Hi-Ros OpenPose Wrapper Node: Parameters override and Run-->
+  <!--**********************************************************-->
+  <include file="$(find hiros_openpose_wrapper)/launch/hiros_opw_default.launch">
+    <arg name="hiros_opw_node_required"       value="true"                  />
+    <arg name="node_name"                     value="$(arg node_name)"      />
+
+    <!-- These parameters MUST be overriden following system configuration -->
+    <arg name="models_path"                   value="/home/iaslab/dev/third_party/openpose/models" />
+    <arg name="input_image_topic"             value="/k2b/$(arg node_name)/qhd/image_color_rect"   />
+
+    <!-- These parameters CAN be overriden, feel free to place just what you need to modify -->
+    <arg name="publish_rendered_image_topic"  value="true"                  />
+    <arg name="publish_compressed"            value="false"                 />
+    <arg name="output_image_topic_name"       value="openpose_detection"    />
+    <arg name="publish_skeleton_group_topic"  value="true"                  />
+    <arg name="out_msg_topic_name"            value="skeleton_group"        />
+    <arg name="use_region_of_interest"        value="true"                  />
+    <arg name="roi_top_left_corner_x"         value="137"                   />
+    <arg name="roi_top_left_corner_y"         value="25"                    />
+    <arg name="roi_width"                     value="1000"                   />
+    <arg name="roi_height"                    value="900"                   />
+    <arg name="min_skeleton_confidence"       value="0.2"                   />
+    <arg name="min_marker_confidence"         value="0.4"                   />
+    <arg name="enable_marker_filtering"       value="false"                 />
+    <arg name="lag_minimization_enable"       value="true"                  />
+    <arg name="max_input_delay"               value="0.1"                   />
+
+    <!-- OpenPose specific parameters, add here below what you need to override -->
+    <arg name="body_render_threshold"         value="0.4"                   />
+    <arg name="body_enable_detection"         value="true"                  />
+    <arg name="hands_enable_detection"        value="true"                 />
+    <arg name="face_enable_detection"         value="false"                 />
+  </include>
+
+</launch>

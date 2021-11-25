@@ -59,8 +59,14 @@ class image_publisher:
 				frame_depth = self.depth_frames[i]
 
 				#if frame_rgb is not None:
+				now = rospy.get_rostime()
+				rospy.loginfo("Current time %i %i", now.secs, now.nsecs)
 				ros_msg_rgb = self.bridge.cv2_to_imgmsg(frame_rgb, 'bgr8')
 				ros_msg_depth = self.bridge.cv2_to_imgmsg(frame_depth, 'bgr8')
+				ros_msg_rgb.header.stamp.secs = now.secs
+				ros_msg_rgb.header.stamp.nsecs = now.nsecs
+				ros_msg_depth.header.stamp.secs = now.secs
+				ros_msg_depth.header.stamp.nsecs = now.nsecs
 				self.image_pub.publish(ros_msg_rgb)
 				self.depth_pub.publish(ros_msg_depth)
 				self.cameraInfo_pub.publish(self.cam_info_msg)
@@ -99,5 +105,6 @@ def main(args):
 if __name__=='__main__':
 
 	main(sys.argv)
+
 
 
