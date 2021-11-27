@@ -59,6 +59,7 @@ def show_depth_mask(img_rgb, img_d):
 	cv2.imshow('depth mask', res)
 	cv2.waitKey(0)
 
+
 def overlay_rgbd(img_d):
 
 	cam = A_CODE[4:8]
@@ -69,8 +70,8 @@ def overlay_rgbd(img_d):
 	return depth_full
 
 	
-'''
-def overlay_rgbd1(img_rgb, img_d):
+
+def show_depth_mask1(img_rgb, img_d):
 
 	cam = A_CODE[4:8]
 	A = depth_to_rgb_affine_transforms[cam]
@@ -78,16 +79,24 @@ def overlay_rgbd1(img_rgb, img_d):
 	print(rows, cols)
 
 	depth = cv2.warpAffine(img_d, A, (1920, 1080), flags=cv2.INTER_CUBIC)
+	(rows, cols) = depth.shape[:2]
+
+	for i in range(cols):
+		print(i, ": ", depth[0,i])
+		
+
+
+
+
 	temp = cv2.findNonZero(depth)
 	for pix in temp:
 		depth[pix[0][1],pix[0][0]]= 255
 	mask = np.asarray(depth, dtype="uint8")
 	res = cv2.bitwise_and(img_rgb,img_rgb,mask = mask)
 
-	cv2.imshow('affine depth',res)
+	cv2.imshow('affine depth',mask)
 	cv2.waitKey(0)
-	#rgbd = res + img_rgb
-'''
+
 
 
 def main(args):
@@ -97,14 +106,15 @@ def main(args):
 		frame = filename.split('/')[3][12:15]
 		img_rgb = cv2.imread(RGB_PATH + A_CODE + '_rgb_'+ frame + '.png')
 		img_depth = cv2.imread(DEPTH_PATH + 'MDepth-00000' + frame + '.png',cv2.IMREAD_GRAYSCALE)
-		#show_depth_mask(img_rgb, img_depth)
-		depth = overlay_rgbd(img_depth)
-		cv2.imwrite(OUT_PATH+ 'MDepth-00000' + frame + '.png',depth)
+		#show_depth_mask1(img_rgb, img_depth)
+		#depth = overlay_rgbd(img_depth)
+		#cv2.imwrite(OUT_PATH+ 'MDepth-00000' + frame + '.png',depth)
 
 		#cv2.imshow('transformed depth image', depth)
 		#cv2.waitKey(0)
 
-
+	img_depth = np.ones((424,512), dtype=np.uint8)*255
+	show_depth_mask1(img_rgb, img_depth)
 
 
 if __name__=='__main__':
