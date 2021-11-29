@@ -71,9 +71,9 @@ class SkeletonMarkers():
         self.markers.points = list()
         for skeleton in msg.skeletons: 
         	for joint in skeleton.markers:         
-            p = Point()
-            p = joint.center.pose.position
-            self.markers.points.append(p)
+            	p = Point()
+           		p = joint.center.pose.position
+            	self.markers.points.append(p)
 
     def shutdown(self):
         rospy.loginfo('Shutting down Skeleton Marker Node.')
