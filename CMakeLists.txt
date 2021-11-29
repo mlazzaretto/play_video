@@ -13,6 +13,10 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   rospy
   std_msgs
+  image_transport
+  sensor_msgs
+  hiros_skeleton_msgs
+  tf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -163,7 +167,7 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
-   scripts/publish_video.py
+   scripts/publish_video.py scripts/visualize_skeleton.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

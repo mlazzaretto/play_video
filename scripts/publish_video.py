@@ -34,12 +34,12 @@ class image_publisher:
 			self.rgb_frames.append(cv_image)
 
 		for frame in sorted(glob.glob(self.input_depth_dir+'*.png')):
-			cv_image = cv2.imread(frame)
+			cv_image = cv2.imread(frame,  cv2.IMREAD_GRAYSCALE)
 			self.depth_frames.append(cv_image)
 
 		self.cam_info_msg = CameraInfo()
-		self.cam_info_msg.width = 1920
-		self.cam_info_msg.height = 1080				
+		self.cam_info_msg.width = 512
+		self.cam_info_msg.height = 424				
 		fx = 365.481
 		fy = 365.481
 		cx = 257.346
@@ -62,11 +62,17 @@ class image_publisher:
 				now = rospy.get_rostime()
 				rospy.loginfo("Current time %i %i", now.secs, now.nsecs)
 				ros_msg_rgb = self.bridge.cv2_to_imgmsg(frame_rgb, 'bgr8')
-				ros_msg_depth = self.bridge.cv2_to_imgmsg(frame_depth, 'bgr8')
+				ros_msg_depth = self.bridge.cv2_to_imgmsg(frame_depth, 'mono8')
 				ros_msg_rgb.header.stamp.secs = now.secs
 				ros_msg_rgb.header.stamp.nsecs = now.nsecs
+				ros_msg_rgb.height = 424
+				ros_msg_rgb.width = 512
+				ros_msg_rgb.encoding = "bgr8"
 				ros_msg_depth.header.stamp.secs = now.secs
 				ros_msg_depth.header.stamp.nsecs = now.nsecs
+				ros_msg_depth.height = 424
+				ros_msg_depth.width = 512
+				ros_msg_depth.encoding = "mono8"
 				self.image_pub.publish(ros_msg_rgb)
 				self.depth_pub.publish(ros_msg_depth)
 				self.cameraInfo_pub.publish(self.cam_info_msg)
