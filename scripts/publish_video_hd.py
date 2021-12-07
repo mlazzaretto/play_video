@@ -122,7 +122,7 @@ def main(args):
 
 	for filename in sorted(glob.glob(RGB_PATH+'*.avi')):
 	
-		action = filename.split('/')[-2]
+		action = filename.split('/')[-1]
 		action_code = action.split('_')[0]
 		img_pub = image_publisher(action_code)
 		img_pub.run()

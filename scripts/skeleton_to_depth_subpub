@@ -49,8 +49,8 @@ class skeleton_to_depth():
 
 		rospy.init_node('skeleton_to_depth', anonymous=True)
 		self.action_sub = message_filters.Subscriber('/action_code', Action)
-		self.skeleton_sub = message_filters.Subscriber('/hiros/opw_3d/node_01/skeleton_group', SkeletonGroup)
-		self.pub = rospy.Publisher('/hiros/opw_3d/node_01/skeleton_group_t', SkeletonGroup, queue_size=10)
+		self.skeleton_sub = message_filters.Subscriber('/hiros/opw/node_01/skeleton_group', SkeletonGroup)
+		self.pub = rospy.Publisher('/hiros/opw/node_01/skeleton_group_t', SkeletonGroup, queue_size=10)
 		self.ts = message_filters.ApproximateTimeSynchronizer([self.action_sub, self.skeleton_sub], 10, 0.5, allow_headerless=False)
 		self.ts.registerCallback(self.callback) 
 
