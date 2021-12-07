@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   hiros_skeleton_msgs
   tf
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -54,11 +55,10 @@ find_package(OpenCV REQUIRED)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+   FILES
+   Action.msg
+ )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -75,10 +75,10 @@ find_package(OpenCV REQUIRED)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   roscppsensor_msgs#   std_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -112,7 +112,7 @@ find_package(OpenCV REQUIRED)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES play_video
-#  CATKIN_DEPENDS cv_bridge opencv2 roscppsensor_msgs rospy std_msgs
+#  CATKIN_DEPENDS cv_bridge opencv2 roscppsensor_msgs rospy std_msgs message_runtime
 #  DEPENDS system_lib
 )
 
@@ -167,7 +167,7 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
-   scripts/publish_video.py scripts/visualize_skeleton.py
+   scripts/publish_video.py scripts/visualize_skeleton.py scripts/read_skeleton_data.py scripts/publish_video_rgb.py scripts/get_openpose_skeleton.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
