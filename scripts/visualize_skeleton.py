@@ -24,6 +24,8 @@ from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
 from skeleton_msgs.msg import SkeletonGroup
 
+### Visualize 3D skeleton markers ###
+
 class SkeletonMarkers():
     def __init__(self):
         rospy.init_node('skeleton_markers')
