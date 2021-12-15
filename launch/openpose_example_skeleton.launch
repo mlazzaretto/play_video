@@ -6,9 +6,11 @@
   <!--****************************************************-->
   <!-- Margherita publisher from files                    -->
   <!--****************************************************-->
-  <node pkg="play_video" type="publish_video_test.py" name="fake_camera_publisher">
+  <node pkg="play_video" type="publish_video_rgb.py" name="fake_rgb_publisher">
     <remap from="image_color_rect" to="/k2b/$(arg node_name)/qhd/image_color_rect" />
-    <remap from="image_depth_rect" to="/k2b/$(arg node_name)/qhd/image_depth_rect" />
+  </node>
+
+  <node pkg="play_video" type="get_openpose_skeleton.py" name="op2D_skeleton_writer">
   </node>
 
   <!--**********************************************************-->
@@ -29,10 +31,10 @@
     <arg name="publish_skeleton_group_topic"  value="true"                  />
     <arg name="out_msg_topic_name"            value="skeleton_group"        />
     <arg name="use_region_of_interest"        value="true"                  />
-    <arg name="roi_top_left_corner_x"         value="0"                   />
-    <arg name="roi_top_left_corner_y"         value="0"                    />
-    <arg name="roi_width"                     value="512"                   />
-    <arg name="roi_height"                    value="424"                   />
+    <arg name="roi_top_left_corner_x"         value="137"                   />
+    <arg name="roi_top_left_corner_y"         value="25"                    />
+    <arg name="roi_width"                     value="1600"                   />
+    <arg name="roi_height"                    value="1030"                   />
     <arg name="min_skeleton_confidence"       value="0.2"                   />
     <arg name="min_marker_confidence"         value="0.4"                   />
     <arg name="enable_marker_filtering"       value="false"                 />

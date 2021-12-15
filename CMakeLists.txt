@@ -167,7 +167,7 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
-   scripts/publish_video.py scripts/visualize_skeleton.py scripts/read_skeleton_data.py scripts/publish_video_rgb.py scripts/get_openpose_skeleton.py
+   scripts/publish_video.py scripts/visualize_skeleton.py scripts/read_skeleton_data.py scripts/publish_video_rgb.py scripts/get_openpose_skeleton.py scripts/publish_video_hd.py scripts/skeleton_to_depth_subpub.py scripts/publish_openpifpaf_skeleton.py scripts/read_openpifpaf3D_data.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

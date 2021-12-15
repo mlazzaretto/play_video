@@ -7,52 +7,53 @@
   <!--****************************************************-->
   <!-- Margherita publisher from files                    -->
   <!--****************************************************-->
-  <node pkg="play_video" type="publish_video.py" name="fake_camera_publisher" output="screen">
-    <remap from="image_color_rect" to="/k2b/$(arg node_name)/qhd/image_color_rect" />
+  <node pkg="play_video" type="publish_openpifpaf_skeleton.py" name="fake_camera_publisher" output="screen">
+    <remap from="skeleton_group" to="/hiros/opw/$(arg node_name)/res_skeleton_group" />
     <remap from="image_depth_rect" to="/k2b/$(arg node_name)/qhd/image_depth_rect" />
     <remap from="camera_info" to="/k2b/$(arg node_name)/$(arg image_quality)/camera_info" />
   </node>
   
-  <!--node pkg="play_video" type="read_skeleton_data.py" name="skeleton_writer" output="screen"-->
-  <!--/node-->
-  
+  <node pkg="play_video" type="read_openpifpaf3D_data.py" name="skeleton_writer" output="screen">
+  </node>
+
   <!--node pkg="play_video" type="visualize_skeleton.py" name="skeleton_visualizer"-->
   <!--/node-->
+  
 
   <!--**********************************************************-->
   <!-- Hi-Ros OpenPose Wrapper Node: Parameters override and Run-->
   <!--**********************************************************-->
-  <include file="$(find hiros_openpose_wrapper)/launch/hiros_opw_default.launch">
+  <!--include file="$(find hiros_openpose_wrapper)/launch/hiros_opw_default.launch">
     <arg name="hiros_opw_node_required"       value="true"                  />
-    <arg name="node_name"                     value="$(arg node_name)"      />
+    <arg name="node_name"                     value="$(arg node_name)"      /-->
 
     <!-- These parameters MUST be overriden following system configuration -->
-    <arg name="models_path"                   value="/home/lazzaretto/dev/third_party/openpose/models" />
-    <arg name="input_image_topic"             value="/k2b/$(arg node_name)/qhd/image_color_rect"   />
+    <!--arg name="models_path"                   value="/home/lazzaretto/dev/third_party/openpose/models" />
+    <arg name="input_image_topic"             value="/k2b/$(arg node_name)/qhd/image_color_rect"   /-->
 
     <!-- These parameters CAN be overriden, feel free to place just what you need to modify -->
-    <arg name="publish_rendered_image_topic"  value="true"                  />
+    <!--arg name="publish_rendered_image_topic"  value="true"                  />
     <arg name="publish_compressed"            value="false"                 />
     <arg name="output_image_topic_name"       value="openpose_detection"    />
     <arg name="publish_skeleton_group_topic"  value="true"                  />
     <arg name="out_msg_topic_name"            value="skeleton_group"        />
     <arg name="use_region_of_interest"        value="true"                  />
-    <arg name="roi_top_left_corner_x"         value="0"                   />
+    <arg name="roi_top_left_corner_x"         value="225"                   />
     <arg name="roi_top_left_corner_y"         value="0"                    />
-    <arg name="roi_width"                     value="512"                  />
-    <arg name="roi_height"                    value="424"                   />
+    <arg name="roi_width"                     value="1470"                   />
+    <arg name="roi_height"                    value="1080"                   />
     <arg name="min_skeleton_confidence"       value="0.2"                   />
     <arg name="min_marker_confidence"         value="0.4"                   />
     <arg name="enable_marker_filtering"       value="false"                 />
     <arg name="lag_minimization_enable"       value="true"                  />
-    <arg name="max_input_delay"               value="0.1"                   />
+    <arg name="max_input_delay"               value="0.1"                   /-->
 
     <!-- OpenPose specific parameters, add here below what you need to override -->
-    <arg name="body_render_threshold"         value="0.4"                   />
+    <!--arg name="body_render_threshold"         value="0.4"                   />
     <arg name="body_enable_detection"         value="true"                  />
     <arg name="hands_enable_detection"        value="true"                 />
     <arg name="face_enable_detection"         value="false"                 />
-  </include>
+  </include-->
   
   
   <!--**********************************************************-->
@@ -61,7 +62,7 @@
   <include file="$(find hiros_opw_3d_projector)/launch/hiros_opw_3d_projector_default.launch">
     <arg name="hiros_opw3d_node_required"               value="true"                                                            />
     <arg name="node_name"                               value="$(arg node_name)"                                                />
-    <arg name="in_skeleton_group_topic"                 value="/hiros/opw/$(arg node_name)/skeleton_group" />
+    <arg name="in_skeleton_group_topic"                 value="/hiros/opw/$(arg node_name)/res_skeleton_group" />
     <arg name="out_msg_topic_name"                      value="/hiros/opw_3d/$(arg node_name)/skeleton_group" />
     <arg name="in_depth_topic"                          value="/k2b/$(arg node_name)/$(arg image_quality)/image_depth_rect"     />
     <arg name="in_camera_info_topic"                    value="/k2b/$(arg node_name)/$(arg image_quality)/camera_info"          />

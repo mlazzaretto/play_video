@@ -19,7 +19,7 @@
 """
 
 import rospy
-from skeleton_markers.msg import Skeleton
+#from skeleton_markers.msg import Skeleton
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
 from skeleton_msgs.msg import SkeletonGroup

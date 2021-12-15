@@ -32,7 +32,7 @@ class acquire_skeleton_data:
   def __init__(self):
 
     self.package_dir = rospkg.RosPack().get_path('play_video')
-    self.output_dir = rospy.get_param('output_dir', self.package_dir + '/data/skeletons/')
+    self.output_dir = rospy.get_param('output_dir', self.package_dir + '/data/openpifpaf_skeletons/')
 
     self.action_code = ''
     self.skeleton_file = ''
@@ -74,36 +74,29 @@ class acquire_skeleton_data:
       file.write('{}\n'.format(len(skeletons)))
 
       for skeleton in skeletons:
-        num_joints = 67
+        num_joints = 65
         file.write("{}\n{}\n".format(skeleton.id, num_joints))
-        id_count = 0
+        id_count = 1
         for joint in skeleton.markers:
+
           while(joint.id != id_count):
-            file.write('{} {} {} {}\n'.format(id_count, 0.0, 0.0, 0.0))
-            if id_count != 24 and id_count != 420:
-              id_count = id_count + 1
-            elif id_count == 24:
-              id_count = 400
+            if id_count>23 and id_count<92:
+              id_count = id_count+1
             else:
-              id_count = 500
+              file.write('{} {} {} {}\n'.format(id_count, 0.0, 0.0, 0.0))
+              id_count = id_count + 1
 
-          p = joint.center.pose.position
-          file.write('{} {} {} {}\n'.format(joint.id, p.x, p.y, p.z))
-          if id_count != 24 and id_count != 420:
-            id_count = id_count + 1
-          elif id_count == 24:
-            id_count = 400
+          if id_count>23 and id_count<92:
+            id_count = id_count+1
           else:
-            id_count = 500
+            p = joint.center.pose.position
+            file.write('{} {} {} {}\n'.format(joint.id, p.x, p.y, p.z))
+            id_count = id_count + 1
 
-      while(id_count<=520):
+      while(id_count<=133):
         file.write('{} {} {} {}\n'.format(id_count, 0.0, 0.0, 0.0))
-        if id_count != 24 and id_count != 420:
-          id_count = id_count + 1
-        elif id_count == 24:
-          id_count = 400
-        else:
-          id_count = 500
+        id_count = id_count + 1
+
 
 
   '''

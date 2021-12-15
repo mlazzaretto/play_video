@@ -3,12 +3,14 @@
 from __future__ import print_function
 
 import roslib
-import rospy, rospkg
+import rospy
 import sys, os
 import cv2
 import glob
 import numpy as np
 import PIL
+import openpifpaf
+import matplotlib.pyplot as plt
 from std_msgs.msg import String, Int16
 from sensor_msgs.msg import Image, CameraInfo
 from play_video.msg import Action
@@ -70,9 +72,11 @@ righthand_skeleton = ([
 
 WHOLEBODY_SKELETON = body_foot_skeleton + face_skeleton + lefthand_skeleton + righthand_skeleton
 
-
-VIDEO_PATH = rospkg.RosPack().get_path('play_video')+ '/data/nturgb+d_rgb_videos/'
-DEPTH_PATH = rospkg.RosPack().get_path('play_video') + '/data/nturgb+d_depth_masked_s1s2/'
+VIDEO_PATH = '/home/lazzaretto/catkin_ws/src/play_video/data/ntu_dataset/60/rgb/nturgb+d_rgb/'
+DEPTH_PATH = '/home/lazzaretto/catkin_ws/src/play_video/data/ntu_dataset/60/depth/nturgb+d_depth_masked/'
+TEMP_PATH = '/home/lazzaretto/catkin_ws/src/play_video/data/temp/'
+#VIDEO_PATH = rospkg.RosPack().get_path('play_video')+ '/data/nturgb+d_rgb_videos/'
+#DEPTH_PATH = rospkg.RosPack().get_path('play_video') + '/data/nturgb+d_depth_masked_s1s2/'
 
 
 class opifpaf_publisher:
@@ -81,14 +85,17 @@ class opifpaf_publisher:
 
 		# Params
 		self.action_code = rospy.get_param('action_code', action_code)
-		self.package_dir = rospkg.RosPack().get_path('play_video')
+		#self.package_dir = rospkg.RosPack().get_path('play_video')
 		self.input_video = rospy.get_param('input_dir', VIDEO_PATH + self.action_code + '_rgb.avi')
 		self.input_depth_dir = rospy.get_param('input_depth_dir', DEPTH_PATH + self.action_code + '/')
 
 		rospy.init_node('openpifpaf_publisher', anonymous=True)
-		self.skeleton_pub = rospy.Publisher('skeleton_group', SkeletonGroup, queue_size = 10)
-		self.depth_pub = rospy.Publisher('image_depth_rect', Image, queue_size=10)
-		self.action_pub = rospy.Publisher('action_code', Action, queue_size = 10)
+		self.bridge = CvBridge()
+		self.skeleton_pub = rospy.Publisher('skeleton_group', SkeletonGroup, queue_size = 15)
+		self.depth_pub = rospy.Publisher('image_depth_rect', Image, queue_size=15)
+		self.opifpaf_pub = rospy.Publisher('image_openpifpaf', Image, queue_size=15)
+		self.cameraInfo_pub = rospy.Publisher('camera_info', CameraInfo, queue_size=15)
+		self.action_pub = rospy.Publisher('action_code', Action, queue_size = 15)
 		self.count = 1
 
 		self.cam_info_msg = CameraInfo()
@@ -109,7 +116,10 @@ class opifpaf_publisher:
 
 		cap = cv2.VideoCapture(self.input_video)
 		annotation_painter = openpifpaf.show.AnnotationPainter()
-		predictor = openpifpaf.Predictor(checkpoint='shufflenetv2k30-wholebody', visualize_image=False)
+		predictor = openpifpaf.Predictor(checkpoint='shufflenetv2k30-wholebody', visualize_image=True)
+
+		cam_code= self.action_code[4:8]
+		A = rgb_to_depth_affine_transforms[cam_code]
 
 		rate = rospy.Rate(2)
 		
@@ -123,13 +133,32 @@ class opifpaf_publisher:
 				frame_rgb_pil = PIL.Image.fromarray(cv2.cvtColor(frame_rgb, cv2.COLOR_BGR2RGB))
 
 				skeletons, _, _ = predictor.pil_image(frame_rgb_pil)
+				
+				image = openpifpaf.visualizer.Base.image()
+				out_image = TEMP_PATH +'temp.png'
+				with openpifpaf.show.image_canvas(image, out_image) as ax:
+					annotation_painter.annotations(ax, skeletons)
+	
+				img = cv2.imread(out_image)
+				ros_msg_opifpaf = Image()
+				ros_msg_opifpaf.header.stamp.secs = now.secs
+				ros_msg_opifpaf.header.stamp.nsecs = now.nsecs
+				ros_msg_opifpaf.encoding = "bgr8"				
+				ros_msg_opifpaf.height = 2160
+				ros_msg_opifpaf.width = 3840
+				if img.dtype.byteorder == '>':
+					ros_msg_opifpaf.is_bigendian = True
+				ros_msg_opifpaf.data = img.tobytes()
+				ros_msg_opifpaf.step = len(ros_msg_opifpaf.data)//ros_msg_opifpaf.height
+			
+				
 				skeletons_msg = SkeletonGroup()
 				skeletons_msg.header.seq = self.count
-				skeletons_msg.header.stamp.secs = now.nsecs
+				skeletons_msg.header.stamp.secs = now.secs
 				skeletons_msg.header.stamp.nsecs = now.nsecs
 
 				skeleton_msgs = []
-				#rospy.loginfo("Current time %i %i", now.secs, now.nsecs)
+				rospy.loginfo("Current time %i %i", now.secs, now.nsecs)
 
 				for s,skeleton in enumerate(skeletons):
 					skeleton_msg = Skeleton()
@@ -144,10 +173,17 @@ class opifpaf_publisher:
 					for j,joint in enumerate(skeleton.data):
 						marker = Marker()
 						marker.id = j+1
-						marker.confidence = joint[2]
-						marker.center.pose.position.x = joint[0]
-						marker.center.pose.position.y = joint[1]
-						markers.append(marker)
+						if joint[2]>0.0:
+							marker.confidence = joint[2]
+							point = np.ones((3,1))
+							point[0,0] = joint[0]
+							point[1,0] = joint[1]
+							point_aff = np.matmul(A, point)
+							marker.center.pose.position.x = point_aff[0]
+							marker.center.pose.position.y = point_aff[1]
+							#marker.center.pose.position.x = joint[0]
+							#marker.center.pose.position.y = joint[1]
+							markers.append(marker)
 					skeleton_msg.markers = markers
 					
 					links = []
@@ -162,8 +198,14 @@ class opifpaf_publisher:
 						child_pos = markers[joints[1]-1].center.pose.position
 						if parent_confidence>0.0 and child_confidence>0.0:
 							link.confidence = min(parent_confidence,child_confidence)
-							link.center.pose.position.x = (parent_pos.x+child_pos.x)*0.5
-							link.center.pose.position.y = (parent_pos.y+child_pos.y)*0.5
+							point = np.ones((3,1))
+							x = (parent_pos.x+child_pos.x)*0.5
+							y = (parent_pos.y+child_pos.y)*0.5
+							point[0,0] = x
+							point[1,0] = y
+							point_aff = np.matmul(A, point)
+							link.center.pose.position.x = point_aff[0]
+							link.center.pose.position.y = point_aff[1]
 							links.append(link)
 					skeleton_msg.links = links
 
@@ -172,23 +214,39 @@ class opifpaf_publisher:
 					skeleton_msgs.append(skeleton_msg)
 				skeletons_msg.skeletons = skeleton_msgs
 
-				ros_msg_depth = self.bridge.cv2_to_imgmsg(frame_depth, 'mono8')
+				#ros_msg_depth = self.bridge.cv2_to_imgmsg(frame_depth, 'mono8')
+
+				ros_msg_depth = Image()
 				ros_msg_depth.header.stamp.secs = now.secs
 				ros_msg_depth.header.stamp.nsecs = now.nsecs
+				ros_msg_depth.encoding = "mono8"				
 				ros_msg_depth.height = 424
 				ros_msg_depth.width = 512
-				ros_msg_depth.encoding = "mono8"
+				if frame_depth.dtype.byteorder == '>':
+					ros_msg_depth.is_bigendian = True
+				ros_msg_depth.data = frame_depth.tobytes()
+				ros_msg_depth.step = len(ros_msg_depth.data)//ros_msg_depth.height
 				
 				action_msg = Action()
 				action_msg.action = self.action_code
 				action_msg.header.stamp.secs = now.secs
 				action_msg.header.stamp.nsecs = now.nsecs
 
-				
+				self.cam_info_msg.header.stamp.secs = now.secs
+				self.cam_info_msg.header.stamp.nsecs = now.nsecs
+
+
 				self.action_pub.publish(action_msg)
-				self.skeleton_pub.publish(skeletons_msg)
+				print('*************ACTION*************')
 				self.depth_pub.publish(ros_msg_depth)
+				print('*************DEPTH*************')
 				self.cameraInfo_pub.publish(self.cam_info_msg)
+				print('*************CAMINFO*************')
+				self.skeleton_pub.publish(skeletons_msg)
+				print('*************SKELETON*************')
+				self.opifpaf_pub.publish(ros_msg_opifpaf)				
+				
+
 
 
 				rate.sleep()
@@ -198,12 +256,15 @@ class opifpaf_publisher:
 
 
 def main():
-
-	for filename in sorted(glob.glob(VIDEO_PATH+'*.avi')):
-
+	
+	for filename in sorted(glob.glob(VIDEO_PATH+'S001C003P005R001A01*.avi')):
 		action = filename.split('/')[-1]
 		action_code = action.split('_')[0]
 		opifpaf_pub = opifpaf_publisher(action_code)
 		opifpaf_pub.run()
 	
 	rospy.spin()
+
+if __name__=='__main__':
+
+	main()

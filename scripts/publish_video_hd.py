@@ -13,8 +13,11 @@ from sensor_msgs.msg import Image, CameraInfo
 from play_video.msg import Action
 from cv_bridge import CvBridge, CvBridgeError
 
-RGB_PATH = rospkg.RosPack().get_path('play_video')+ '/data/nturgb+d_rgb_videos/'
-DEPTH_PATH = rospkg.RosPack().get_path('play_video') + '/data/nturgb+d_depth_masked_s1s2/'
+
+RGB_PATH = rospkg.RosPack().get_path('play_video')+ '/data/ntu_dataset/60/rgb/nturgb+d_rgb/'
+DEPTH_PATH = rospkg.RosPack().get_path('play_video') + '/data/ntu_dataset/60/depth/nturgb+d_depth_masked/'
+#RGB_PATH = rospkg.RosPack().get_path('play_video')+ '/data/nturgb+d_rgb_videos/'
+#DEPTH_PATH = rospkg.RosPack().get_path('play_video') + '/data/nturgb+d_depth_masked_s1s2/'
 #RGB_PATH = rospkg.RosPack().get_path('play_video')+ '/data/rgb_frames/'
 #DEPTH_PATH = rospkg.RosPack().get_path('play_video') + '/data/depth_frames/'
 
@@ -120,7 +123,7 @@ def main(args):
 
 	rospy.init_node('image_publisher', anonymous=True)
 
-	for filename in sorted(glob.glob(RGB_PATH+'*.avi')):
+	for filename in sorted(glob.glob(RGB_PATH+'S002C003*.avi')):
 	
 		action = filename.split('/')[-1]
 		action_code = action.split('_')[0]

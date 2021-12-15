@@ -7,17 +7,21 @@
   <!--****************************************************-->
   <!-- Margherita publisher from files                    -->
   <!--****************************************************-->
-  <node pkg="play_video" type="publish_video.py" name="fake_camera_publisher" output="screen">
+  <node pkg="play_video" type="publish_video_hd.py" name="fake_camera_publisher" output="screen">
     <remap from="image_color_rect" to="/k2b/$(arg node_name)/qhd/image_color_rect" />
     <remap from="image_depth_rect" to="/k2b/$(arg node_name)/qhd/image_depth_rect" />
     <remap from="camera_info" to="/k2b/$(arg node_name)/$(arg image_quality)/camera_info" />
   </node>
   
-  <!--node pkg="play_video" type="read_skeleton_data.py" name="skeleton_writer" output="screen"-->
-  <!--/node-->
+  <node pkg="play_video" type="skeleton_to_depth_subpub.py" name="skeleton_resizer" output="screen">
+  </node>
   
-  <!--node pkg="play_video" type="visualize_skeleton.py" name="skeleton_visualizer"-->
-  <!--/node-->
+  <!--node pkg="play_video" type="read_skeleton_data.py" name="skeleton_writer" output="screen">
+  </node-->
+
+  <node pkg="play_video" type="visualize_skeleton.py" name="skeleton_visualizer">
+  </node>
+  
 
   <!--**********************************************************-->
   <!-- Hi-Ros OpenPose Wrapper Node: Parameters override and Run-->
@@ -37,10 +41,10 @@
     <arg name="publish_skeleton_group_topic"  value="true"                  />
     <arg name="out_msg_topic_name"            value="skeleton_group"        />
     <arg name="use_region_of_interest"        value="true"                  />
-    <arg name="roi_top_left_corner_x"         value="0"                   />
+    <arg name="roi_top_left_corner_x"         value="225"                   />
     <arg name="roi_top_left_corner_y"         value="0"                    />
-    <arg name="roi_width"                     value="512"                  />
-    <arg name="roi_height"                    value="424"                   />
+    <arg name="roi_width"                     value="1470"                   />
+    <arg name="roi_height"                    value="1080"                   />
     <arg name="min_skeleton_confidence"       value="0.2"                   />
     <arg name="min_marker_confidence"         value="0.4"                   />
     <arg name="enable_marker_filtering"       value="false"                 />
@@ -61,7 +65,7 @@
   <include file="$(find hiros_opw_3d_projector)/launch/hiros_opw_3d_projector_default.launch">
     <arg name="hiros_opw3d_node_required"               value="true"                                                            />
     <arg name="node_name"                               value="$(arg node_name)"                                                />
-    <arg name="in_skeleton_group_topic"                 value="/hiros/opw/$(arg node_name)/skeleton_group" />
+    <arg name="in_skeleton_group_topic"                 value="/hiros/opw/$(arg node_name)/res_skeleton_group" />
     <arg name="out_msg_topic_name"                      value="/hiros/opw_3d/$(arg node_name)/skeleton_group" />
     <arg name="in_depth_topic"                          value="/k2b/$(arg node_name)/$(arg image_quality)/image_depth_rect"     />
     <arg name="in_camera_info_topic"                    value="/k2b/$(arg node_name)/$(arg image_quality)/camera_info"          />

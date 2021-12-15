@@ -13,10 +13,10 @@ from sensor_msgs.msg import Image, CameraInfo
 from play_video.msg import Action
 from cv_bridge import CvBridge, CvBridgeError
 
-RGB_PATH = rospkg.RosPack().get_path('play_video')+ '/data/nturgb+d_rgb_frames/'
-DEPTH_PATH = rospkg.RosPack().get_path('play_video') + '/data/nturgb+d_depth_masked_s1s2/'
-#RGB_PATH = rospkg.RosPack().get_path('play_video')+ '/data/rgb_frames/'
-#DEPTH_PATH = rospkg.RosPack().get_path('play_video') + '/data/depth_frames/'
+#RGB_PATH = rospkg.RosPack().get_path('play_video')+ '/data/nturgb+d_rgb_frames/'
+#DEPTH_PATH = rospkg.RosPack().get_path('play_video') + '/data/nturgb+d_depth_masked_s1s2/'
+RGB_PATH = rospkg.RosPack().get_path('play_video')+ '/data/rgb_frames/aff_rgb/'
+DEPTH_PATH = rospkg.RosPack().get_path('play_video') + '/data/depth_frames/'
 
 ### Publish rgb frames and depth frames from folder, along with action code ###
 
@@ -39,6 +39,7 @@ class image_publisher:
 		self.depth_frames = []
 
 		for frame in sorted(glob.glob(self.input_dir+'*.png')):
+			print(frame)
 			cv_image = cv2.imread(frame)
 			self.rgb_frames.append(cv_image)
 
@@ -108,10 +109,11 @@ def main(args):
 
 	rospy.init_node('image_publisher', anonymous=True)
 
-	for folder in sorted(glob.glob(RGB_PATH+'*C003P001*/')):
+	for folder in sorted(glob.glob(RGB_PATH+'*C003P005*/')):
 	
 		action = folder.split('/')[-2]
 		action_code = action.split('_')[0]
+		print('***********ACTION CODE:',action_code,'****************')
 		img_pub = image_publisher(action_code)
 		img_pub.run()
 	
